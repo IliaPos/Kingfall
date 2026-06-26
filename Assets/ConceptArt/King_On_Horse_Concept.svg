@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000">
+  <rect width="1400" height="1000" fill="#eef5ef"/>
+
+  <text x="70" y="85" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#25364a">Kingfall - King on Horse Concept</text>
+  <text x="70" y="125" font-family="Arial, sans-serif" font-size="20" fill="#64748b">Original stylized low-poly direction for the playable king placeholder</text>
+
+  <ellipse cx="705" cy="800" rx="430" ry="92" fill="#c9d7bf" opacity="0.75"/>
+  <ellipse cx="705" cy="788" rx="300" ry="48" fill="#94a884" opacity="0.45"/>
+
+  <!-- Horse body -->
+  <polygon points="420,520 520,450 790,425 955,500 900,630 580,655" fill="#8b4d25"/>
+  <polygon points="520,450 790,425 865,470 590,510" fill="#a76431"/>
+  <polygon points="420,520 580,655 545,705 390,610" fill="#6f391b"/>
+  <polygon points="790,425 955,500 1018,452 910,405" fill="#7a3f20"/>
+  <polygon points="955,500 1018,452 1068,496 985,560" fill="#8d4a24"/>
+
+  <!-- Horse neck and head -->
+  <polygon points="875,415 955,330 1048,352 1018,452 910,405" fill="#8b4d25"/>
+  <polygon points="955,330 1090,350 1135,425 1048,452 1048,352" fill="#9a5a2e"/>
+  <polygon points="1090,350 1160,382 1135,425" fill="#6f391b"/>
+  <polygon points="985,314 1030,265 1058,354" fill="#7a3f20"/>
+  <polygon points="1045,323 1085,275 1090,350" fill="#7a3f20"/>
+  <circle cx="1100" cy="382" r="10" fill="#1f2937"/>
+  <polygon points="955,330 1015,340 990,370" fill="#c89b62" opacity="0.55"/>
+
+  <!-- Mane -->
+  <polygon points="912,382 945,340 965,405 930,455 900,430" fill="#3b2114"/>
+  <polygon points="945,340 980,326 990,390 965,405" fill="#472719"/>
+
+  <!-- Horse legs -->
+  <polygon points="520,635 575,635 555,785 500,785" fill="#6f391b"/>
+  <polygon points="615,645 670,645 692,785 635,785" fill="#7a3f20"/>
+  <polygon points="810,632 865,620 865,785 808,785" fill="#6f391b"/>
+  <polygon points="900,610 955,590 1005,760 950,770" fill="#7a3f20"/>
+  <polygon points="488,785 565,785 558,815 475,815" fill="#2f1a12"/>
+  <polygon points="625,785 705,785 710,815 620,815" fill="#2f1a12"/>
+  <polygon points="800,785 877,785 890,815 790,815" fill="#2f1a12"/>
+  <polygon points="940,770 1018,760 1035,790 945,805" fill="#2f1a12"/>
+
+  <!-- Tail -->
+  <polygon points="405,520 305,480 272,550 390,610" fill="#3b2114"/>
+  <polygon points="305,480 235,520 272,550" fill="#472719"/>
+
+  <!-- Saddle -->
+  <polygon points="600,420 785,405 840,482 585,515" fill="#26384f"/>
+  <polygon points="620,392 760,380 785,405 600,420" fill="#36577a"/>
+  <polygon points="585,515 840,482 805,540 610,558" fill="#1f2d40"/>
+  <polygon points="650,430 710,425 705,575 660,575" fill="#d1a24a"/>
+
+  <!-- King legs -->
+  <polygon points="665,430 710,435 705,595 650,595" fill="#1f3f75"/>
+  <polygon points="755,425 805,435 830,585 775,590" fill="#17345f"/>
+  <polygon points="640,590 712,590 710,625 632,625" fill="#2a1b14"/>
+  <polygon points="770,585 840,580 850,615 772,620" fill="#2a1b14"/>
+
+  <!-- King torso -->
+  <polygon points="635,300 765,285 835,405 610,430" fill="#2f65b1"/>
+  <polygon points="765,285 845,330 835,405" fill="#244d8c"/>
+  <polygon points="610,430 835,405 800,455 640,465" fill="#193a68"/>
+  <polygon points="675,315 750,305 790,405 650,420" fill="#d8a73e" opacity="0.9"/>
+  <polygon points="700,325 750,318 765,390 685,398" fill="#f2d16b" opacity="0.7"/>
+
+  <!-- Cape -->
+  <polygon points="620,320 500,410 475,570 640,465" fill="#b73235"/>
+  <polygon points="500,410 420,520 475,570" fill="#8e232b"/>
+  <polygon points="620,320 610,430 640,465" fill="#d04a4d"/>
+
+  <!-- Head -->
+  <polygon points="655,210 750,195 815,250 790,315 680,325 625,265" fill="#d99a62"/>
+  <polygon points="750,195 825,225 815,250" fill="#c9824d"/>
+  <polygon points="680,325 790,315 760,350 690,355" fill="#a75f3a"/>
+  <polygon points="622,262 675,215 655,300" fill="#70401f"/>
+  <polygon points="790,220 830,245 790,315" fill="#70401f"/>
+  <circle cx="700" cy="260" r="8" fill="#1f2937"/>
+  <circle cx="770" cy="250" r="8" fill="#1f2937"/>
+  <polygon points="710,292 760,286 748,304 724,308" fill="#7a2d22"/>
+
+  <!-- Crown -->
+  <polygon points="635,205 660,145 700,198 740,130 780,190 830,140 820,220 655,235" fill="#e5b83e"/>
+  <polygon points="655,235 820,220 805,248 675,260" fill="#bd8725"/>
+  <circle cx="660" cy="145" r="11" fill="#49a6e9"/>
+  <circle cx="740" cy="130" r="12" fill="#e74b59"/>
+  <circle cx="830" cy="140" r="11" fill="#49a6e9"/>
+
+  <!-- Arms, sword, shield -->
+  <polygon points="610,340 535,382 565,430 650,390" fill="#d99a62"/>
+  <polygon points="835,352 900,380 885,430 815,405" fill="#c9824d"/>
+  <polygon points="880,370 930,342 955,370 890,438" fill="#d8a73e"/>
+  <polygon points="928,340 1010,165 1035,175 957,370" fill="#c8d0d8"/>
+  <polygon points="1010,165 1055,120 1035,175" fill="#eef2f5"/>
+  <polygon points="515,380 590,390 615,470 550,520 490,470" fill="#244d8c"/>
+  <polygon points="540,405 585,410 600,462 558,495 518,462" fill="#e5b83e"/>
+
+  <!-- Simple low-poly facets -->
+  <polygon points="420,520 520,450 590,510" fill="#b86f39" opacity="0.45"/>
+  <polygon points="580,655 790,425 900,630" fill="#6d3619" opacity="0.2"/>
+  <polygon points="635,300 765,285 675,315" fill="#5f93dc" opacity="0.35"/>
+  <polygon points="655,210 750,195 700,260" fill="#efb782" opacity="0.35"/>
+
+  <!-- Palette notes -->
+  <rect x="70" y="745" width="260" height="150" rx="18" fill="#ffffff" opacity="0.82"/>
+  <text x="95" y="785" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#25364a">Style Notes</text>
+  <text x="95" y="820" font-family="Arial, sans-serif" font-size="16" fill="#475569">Chunky readable silhouette</text>
+  <text x="95" y="848" font-family="Arial, sans-serif" font-size="16" fill="#475569">Bright royal colors</text>
+  <text x="95" y="876" font-family="Arial, sans-serif" font-size="16" fill="#475569">Low-poly faceted shapes</text>
+
+  <rect x="1115" y="720" width="210" height="155" rx="18" fill="#ffffff" opacity="0.82"/>
+  <text x="1140" y="760" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#25364a">Palette</text>
+  <rect x="1140" y="785" width="34" height="34" fill="#2f65b1"/><text x="1188" y="809" font-family="Arial, sans-serif" font-size="15" fill="#475569">Royal blue</text>
+  <rect x="1140" y="827" width="34" height="34" fill="#e5b83e"/><text x="1188" y="851" font-family="Arial, sans-serif" font-size="15" fill="#475569">Gold</text>
+  <rect x="1248" y="785" width="34" height="34" fill="#8b4d25"/><text x="1294" y="809" font-family="Arial, sans-serif" font-size="15" fill="#475569">Horse</text>
+  <rect x="1248" y="827" width="34" height="34" fill="#b73235"/><text x="1294" y="851" font-family="Arial, sans-serif" font-size="15" fill="#475569">Cape</text>
+</svg>
