@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public sealed class KeyboardPlayerInputSource : MonoBehaviour, IPlayerInputSource
 {
     public Vector2 Move => ReadMovementInput();
+    public bool AttackPressed => Keyboard.current?.spaceKey.wasPressedThisFrame == true || Mouse.current?.leftButton.wasPressedThisFrame == true;
+    public bool BuildPressed => Keyboard.current?.bKey.wasPressedThisFrame == true;
 
     private static Vector2 ReadMovementInput()
     {

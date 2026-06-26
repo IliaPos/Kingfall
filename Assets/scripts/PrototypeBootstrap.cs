@@ -36,14 +36,66 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         PrototypeMapGenerator map = new GameObject("Prototype Map").AddComponent<PrototypeMapGenerator>();
         map.Generate();
 
+        Castle castle = CreateCastle();
+        RunEconomy economy = new GameObject("Run Economy").AddComponent<RunEconomy>();
+
         GameObject king = CreateKing();
         king.AddComponent<KeyboardPlayerInputSource>();
         KingController controller = king.AddComponent<KingController>();
         controller.MapRadius = map.MapRadius - 1.5f;
+        king.AddComponent<KingCombat>();
 
         Camera camera = CreateCamera(king.transform);
         controller.CameraTransform = camera.transform;
+        WaveManager waveManager = CreateWaveManager(castle, economy, map.MapRadius);
+        CreateBuildSystem(waveManager, economy, king.transform);
         CreateLight();
+    }
+
+    private static Castle CreateCastle()
+    {
+        Material wallMaterial = CreateMaterial("Prototype Castle Wall", new Color(0.55f, 0.57f, 0.62f));
+        Material roofMaterial = CreateMaterial("Prototype Castle Roof", new Color(0.52f, 0.16f, 0.15f));
+
+        GameObject root = new GameObject("Castle");
+        root.transform.position = Vector3.zero;
+
+        GameObject attackPoint = new GameObject("Castle Attack Point");
+        attackPoint.transform.SetParent(root.transform);
+        attackPoint.transform.localPosition = Vector3.zero;
+
+        GameObject baseTower = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        baseTower.name = "Castle Keep";
+        baseTower.transform.SetParent(root.transform);
+        baseTower.transform.localPosition = new Vector3(0f, 1f, 0f);
+        baseTower.transform.localScale = new Vector3(1.8f, 1f, 1.8f);
+        baseTower.GetComponent<Renderer>().sharedMaterial = wallMaterial;
+
+        GameObject roof = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        roof.name = "Castle Roof";
+        roof.transform.SetParent(root.transform);
+        roof.transform.localPosition = new Vector3(0f, 2.1f, 0f);
+        roof.transform.localScale = new Vector3(1.35f, 0.35f, 1.35f);
+        roof.GetComponent<Renderer>().sharedMaterial = roofMaterial;
+
+        Health health = root.AddComponent<Health>();
+        health.SetMaxHealth(250f);
+        Castle castle = root.AddComponent<Castle>();
+        castle.SetAttackPoint(attackPoint.transform);
+        return castle;
+    }
+
+    private static WaveManager CreateWaveManager(Castle castle, RunEconomy economy, float mapRadius)
+    {
+        WaveManager waveManager = new GameObject("Wave Manager").AddComponent<WaveManager>();
+        waveManager.Initialize(castle, economy, mapRadius);
+        return waveManager;
+    }
+
+    private static void CreateBuildSystem(WaveManager waveManager, RunEconomy economy, Transform builder)
+    {
+        BuildSystem buildSystem = new GameObject("Build System").AddComponent<BuildSystem>();
+        buildSystem.Initialize(waveManager, economy, builder);
     }
 
     private static GameObject CreateKing()
@@ -76,6 +128,14 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         crown.transform.localPosition = new Vector3(0f, 1.75f, 0f);
         crown.transform.localScale = new Vector3(0.33f, 0.12f, 0.33f);
         crown.GetComponent<Renderer>().sharedMaterial = crownMaterial;
+
+        GameObject sword = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        sword.name = "Sword Placeholder";
+        sword.transform.SetParent(root.transform);
+        sword.transform.localPosition = new Vector3(0.55f, 1.1f, 0.55f);
+        sword.transform.localRotation = Quaternion.Euler(35f, 45f, 0f);
+        sword.transform.localScale = new Vector3(0.12f, 0.75f, 0.12f);
+        sword.GetComponent<Renderer>().sharedMaterial = CreateMaterial("Prototype Sword", new Color(0.78f, 0.82f, 0.86f));
 
         return root;
     }
