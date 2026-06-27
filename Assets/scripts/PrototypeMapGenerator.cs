@@ -3,9 +3,9 @@ using UnityEngine;
 public sealed class PrototypeMapGenerator : MonoBehaviour
 {
     [SerializeField] private int seed = 12345;
-    [SerializeField] private float mapRadius = 30f;
-    [SerializeField] private int treeCount = 75;
-    [SerializeField] private int rockCount = 28;
+    [SerializeField] private float mapRadius = 70f;
+    [SerializeField] private int treeCount = 180;
+    [SerializeField] private int rockCount = 65;
 
     private Material grassMaterial;
     private Material dirtMaterial;
@@ -50,7 +50,7 @@ public sealed class PrototypeMapGenerator : MonoBehaviour
         ground.name = "Prototype Map Ground";
         ground.transform.SetParent(transform);
         ground.transform.position = Vector3.zero;
-        ground.transform.localScale = new Vector3(mapRadius, 0.08f, mapRadius);
+        ground.transform.localScale = new Vector3(mapRadius * 2f, 0.08f, mapRadius * 2f);
         ground.GetComponent<Renderer>().sharedMaterial = grassMaterial;
     }
 

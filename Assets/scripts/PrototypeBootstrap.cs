@@ -38,17 +38,20 @@ public sealed class PrototypeBootstrap : MonoBehaviour
 
         Castle castle = CreateCastle();
         RunEconomy economy = new GameObject("Run Economy").AddComponent<RunEconomy>();
+        RunStats runStats = new GameObject("Run Stats").AddComponent<RunStats>();
 
         GameObject king = CreateKing();
-        king.AddComponent<KeyboardPlayerInputSource>();
+        KeyboardPlayerInputSource inputSource = king.AddComponent<KeyboardPlayerInputSource>();
         KingController controller = king.AddComponent<KingController>();
         controller.MapRadius = map.MapRadius - 1.5f;
-        king.AddComponent<KingCombat>();
+        KingCombat kingCombat = king.AddComponent<KingCombat>();
+        kingCombat.Initialize(runStats);
 
         Camera camera = CreateCamera(king.transform);
         controller.CameraTransform = camera.transform;
-        WaveManager waveManager = CreateWaveManager(castle, economy, map.MapRadius);
-        CreateBuildSystem(waveManager, economy, king.transform);
+        RewardManager rewardManager = CreateRewardManager(runStats, economy, castle, inputSource);
+        WaveManager waveManager = CreateWaveManager(castle, economy, rewardManager, inputSource, map.MapRadius);
+        CreateBuildSystem(waveManager, economy, runStats, king.transform);
         CreateLight();
     }
 
@@ -70,6 +73,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         baseTower.transform.localPosition = new Vector3(0f, 1f, 0f);
         baseTower.transform.localScale = new Vector3(1.8f, 1f, 1.8f);
         baseTower.GetComponent<Renderer>().sharedMaterial = wallMaterial;
+        RemoveCollider(baseTower);
 
         GameObject roof = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         roof.name = "Castle Roof";
@@ -77,6 +81,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         roof.transform.localPosition = new Vector3(0f, 2.1f, 0f);
         roof.transform.localScale = new Vector3(1.35f, 0.35f, 1.35f);
         roof.GetComponent<Renderer>().sharedMaterial = roofMaterial;
+        RemoveCollider(roof);
 
         Health health = root.AddComponent<Health>();
         health.SetMaxHealth(250f);
@@ -85,17 +90,24 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         return castle;
     }
 
-    private static WaveManager CreateWaveManager(Castle castle, RunEconomy economy, float mapRadius)
+    private static RewardManager CreateRewardManager(RunStats runStats, RunEconomy economy, Castle castle, IPlayerInputSource inputSource)
+    {
+        RewardManager rewardManager = new GameObject("Reward Manager").AddComponent<RewardManager>();
+        rewardManager.Initialize(runStats, economy, castle, inputSource);
+        return rewardManager;
+    }
+
+    private static WaveManager CreateWaveManager(Castle castle, RunEconomy economy, RewardManager rewardManager, IPlayerInputSource inputSource, float mapRadius)
     {
         WaveManager waveManager = new GameObject("Wave Manager").AddComponent<WaveManager>();
-        waveManager.Initialize(castle, economy, mapRadius);
+        waveManager.Initialize(castle, economy, rewardManager, inputSource, mapRadius);
         return waveManager;
     }
 
-    private static void CreateBuildSystem(WaveManager waveManager, RunEconomy economy, Transform builder)
+    private static void CreateBuildSystem(WaveManager waveManager, RunEconomy economy, RunStats runStats, Transform builder)
     {
         BuildSystem buildSystem = new GameObject("Build System").AddComponent<BuildSystem>();
-        buildSystem.Initialize(waveManager, economy, builder);
+        buildSystem.Initialize(waveManager, economy, runStats, builder);
     }
 
     private static GameObject CreateKing()
@@ -114,6 +126,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         horse.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         horse.transform.localScale = new Vector3(0.75f, 0.75f, 1.35f);
         horse.GetComponent<Renderer>().sharedMaterial = horseMaterial;
+        RemoveCollider(horse);
 
         GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         body.name = "King Body Placeholder";
@@ -121,6 +134,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         body.transform.localPosition = new Vector3(0f, 0.95f, 0f);
         body.transform.localScale = new Vector3(0.45f, 0.7f, 0.45f);
         body.GetComponent<Renderer>().sharedMaterial = kingMaterial;
+        RemoveCollider(body);
 
         GameObject crown = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         crown.name = "Crown Placeholder";
@@ -128,6 +142,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         crown.transform.localPosition = new Vector3(0f, 1.75f, 0f);
         crown.transform.localScale = new Vector3(0.33f, 0.12f, 0.33f);
         crown.GetComponent<Renderer>().sharedMaterial = crownMaterial;
+        RemoveCollider(crown);
 
         GameObject sword = GameObject.CreatePrimitive(PrimitiveType.Cube);
         sword.name = "Sword Placeholder";
@@ -136,6 +151,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         sword.transform.localRotation = Quaternion.Euler(35f, 45f, 0f);
         sword.transform.localScale = new Vector3(0.12f, 0.75f, 0.12f);
         sword.GetComponent<Renderer>().sharedMaterial = CreateMaterial("Prototype Sword", new Color(0.78f, 0.82f, 0.86f));
+        RemoveCollider(sword);
 
         return root;
     }
@@ -187,5 +203,14 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         material.name = materialName;
         material.color = color;
         return material;
+    }
+
+    private static void RemoveCollider(GameObject target)
+    {
+        Collider collider = target.GetComponent<Collider>();
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
     }
 }

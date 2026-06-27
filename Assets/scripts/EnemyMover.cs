@@ -4,6 +4,7 @@ public sealed class EnemyMover : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 2.2f;
     [SerializeField] private float stopDistance = 1.6f;
+    [SerializeField] private float wallStopDistance = 1.7f;
     [SerializeField] private Transform target;
 
     public Transform Target
@@ -21,6 +22,11 @@ public sealed class EnemyMover : MonoBehaviour
     private void Update()
     {
         if (target == null)
+        {
+            return;
+        }
+
+        if (Wall.FindNearest(transform.position, wallStopDistance) != null)
         {
             return;
         }

@@ -7,7 +7,13 @@ public sealed class KingCombat : MonoBehaviour
     [SerializeField] private float attacksPerSecond = 1.6f;
 
     private IPlayerInputSource inputSource;
+    private RunStats runStats;
     private float nextAttackTime;
+
+    public void Initialize(RunStats stats)
+    {
+        runStats = stats;
+    }
 
     private void Awake()
     {
@@ -33,7 +39,8 @@ public sealed class KingCombat : MonoBehaviour
             return;
         }
 
-        target.Health.TakeDamage(damage);
+        float multiplier = runStats != null ? runStats.KingDamageMultiplier : 1f;
+        target.Health.TakeDamage(damage * multiplier);
     }
 
     private Enemy FindBestTarget()

@@ -5,6 +5,7 @@ public enum GamePhase
 {
     Preparation,
     Wave,
+    Reward,
     GameOver
 }
 
@@ -12,25 +13,29 @@ public sealed class WaveManager : MonoBehaviour
 {
     [SerializeField] private Castle castle;
     [SerializeField] private RunEconomy economy;
+    [SerializeField] private RewardManager rewardManager;
     [SerializeField] private float mapRadius = 30f;
-    [SerializeField] private float preparationSeconds = 3f;
     [SerializeField] private float spawnInterval = 0.65f;
 
+    private IPlayerInputSource inputSource;
     private Material enemyMaterial;
     private int currentWave;
     private int enemiesSpawnedThisWave;
     private int enemiesToSpawnThisWave;
     private GamePhase phase;
+    private bool startWaveRequested;
 
     public GamePhase Phase => phase;
     public int CurrentWave => currentWave;
     public int AliveEnemies => Enemy.Active.Count;
     public int Gold => economy != null ? economy.Gold : 0;
 
-    public void Initialize(Castle targetCastle, RunEconomy runEconomy, float radius)
+    public void Initialize(Castle targetCastle, RunEconomy runEconomy, RewardManager rewards, IPlayerInputSource input, float radius)
     {
         castle = targetCastle;
         economy = runEconomy;
+        rewardManager = rewards;
+        inputSource = input;
         mapRadius = radius;
     }
 
@@ -46,6 +51,14 @@ public sealed class WaveManager : MonoBehaviour
         StartCoroutine(RunWaves());
     }
 
+    private void Update()
+    {
+        if (phase == GamePhase.Preparation && inputSource != null && inputSource.StartWavePressed)
+        {
+            startWaveRequested = true;
+        }
+    }
+
     private void OnDestroy()
     {
         if (castle != null)
@@ -59,7 +72,12 @@ public sealed class WaveManager : MonoBehaviour
         while (phase != GamePhase.GameOver)
         {
             phase = GamePhase.Preparation;
-            yield return new WaitForSeconds(preparationSeconds);
+            startWaveRequested = false;
+
+            while (!startWaveRequested && phase != GamePhase.GameOver)
+            {
+                yield return null;
+            }
 
             if (phase == GamePhase.GameOver)
             {
@@ -81,6 +99,21 @@ public sealed class WaveManager : MonoBehaviour
             while (Enemy.Active.Count > 0 && phase != GamePhase.GameOver)
             {
                 yield return null;
+            }
+
+            if (phase == GamePhase.GameOver)
+            {
+                yield break;
+            }
+
+            phase = GamePhase.Reward;
+            if (rewardManager != null)
+            {
+                rewardManager.BeginReward(currentWave);
+                while (rewardManager.HasPendingReward && phase != GamePhase.GameOver)
+                {
+                    yield return null;
+                }
             }
         }
     }
@@ -105,6 +138,7 @@ public sealed class WaveManager : MonoBehaviour
         visual.transform.localPosition = new Vector3(0f, 0.9f, 0f);
         visual.transform.localScale = new Vector3(0.85f, 0.9f, 0.85f);
         visual.GetComponent<Renderer>().sharedMaterial = enemyMaterial;
+        RemoveCollider(visual);
 
         Health health = enemyObject.AddComponent<Health>();
         health.SetMaxHealth(45f + currentWave * 8f);
@@ -139,12 +173,14 @@ public sealed class WaveManager : MonoBehaviour
             return;
         }
 
-        GUI.Box(new Rect(16f, 16f, 290f, 150f), string.Empty);
+        GUI.Box(new Rect(16f, 16f, 390f, 205f), string.Empty);
         GUI.Label(new Rect(32f, 32f, 230f, 22f), $"Phase: {phase}");
         GUI.Label(new Rect(32f, 56f, 230f, 22f), $"Wave: {currentWave}");
         GUI.Label(new Rect(32f, 80f, 230f, 22f), $"Enemies: {Enemy.Active.Count}");
         GUI.Label(new Rect(32f, 104f, 230f, 22f), $"Castle HP: {castle.Health.CurrentHealth:0}/{castle.Health.MaxHealth:0}");
-        GUI.Label(new Rect(32f, 128f, 260f, 22f), $"Gold: {Gold} | B: build tower (40)");
+        GUI.Label(new Rect(32f, 128f, 340f, 22f), $"Gold: {Gold} | B: build mode | Q: tower/wall");
+        GUI.Label(new Rect(32f, 152f, 340f, 22f), "LMB: place | Enter: start wave | Space: attack | Esc: cancel");
+        GUI.Label(new Rect(32f, 176f, 340f, 22f), "Reward phase: press 1, 2, or 3 to choose");
 
         if (phase == GamePhase.GameOver)
         {
@@ -158,5 +194,14 @@ public sealed class WaveManager : MonoBehaviour
         material.name = materialName;
         material.color = color;
         return material;
+    }
+
+    private static void RemoveCollider(GameObject target)
+    {
+        Collider collider = target.GetComponent<Collider>();
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
     }
 }
