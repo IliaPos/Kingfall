@@ -9,7 +9,7 @@ public sealed class KeyboardPlayerInputSource : MonoBehaviour, IPlayerInputSourc
     public bool SwitchBuildPressed => Keyboard.current?.qKey.wasPressedThisFrame == true;
     public bool ConfirmPressed => Mouse.current?.leftButton.wasPressedThisFrame == true;
     public bool CancelPressed => Keyboard.current?.escapeKey.wasPressedThisFrame == true;
-    public bool StartWavePressed => Keyboard.current?.enterKey.wasPressedThisFrame == true || Keyboard.current?.numpadEnterKey.wasPressedThisFrame == true;
+    public bool StartWavePressed => Keyboard.current?.enterKey.wasPressedThisFrame == true || Keyboard.current?.numpadEnterKey.wasPressedThisFrame == true || Keyboard.current?.rKey.wasPressedThisFrame == true;
     public int RewardSelection => ReadRewardSelection();
 
     private static int ReadRewardSelection()

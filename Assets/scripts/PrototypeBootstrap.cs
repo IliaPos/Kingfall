@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public sealed class PrototypeBootstrap : MonoBehaviour
 {
@@ -22,6 +25,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
 #endif
 
     [SerializeField] private bool buildOnStart = true;
+    [SerializeField] private RewardDefinition[] rewardDefinitions;
 
     private void Start()
     {
@@ -49,7 +53,7 @@ public sealed class PrototypeBootstrap : MonoBehaviour
 
         Camera camera = CreateCamera(king.transform);
         controller.CameraTransform = camera.transform;
-        RewardManager rewardManager = CreateRewardManager(runStats, economy, castle, inputSource);
+        RewardManager rewardManager = CreateRewardManager(runStats, economy, castle, inputSource, GetRewardDefinitions());
         WaveManager waveManager = CreateWaveManager(castle, economy, rewardManager, inputSource, map.MapRadius);
         CreateBuildSystem(waveManager, economy, runStats, king.transform);
         CreateLight();
@@ -90,9 +94,51 @@ public sealed class PrototypeBootstrap : MonoBehaviour
         return castle;
     }
 
-    private static RewardManager CreateRewardManager(RunStats runStats, RunEconomy economy, Castle castle, IPlayerInputSource inputSource)
+    private RewardDefinition[] GetRewardDefinitions()
+    {
+        if (rewardDefinitions != null && rewardDefinitions.Length > 0)
+        {
+            return rewardDefinitions;
+        }
+
+#if UNITY_EDITOR
+        rewardDefinitions = LoadRewardDefinitionsFromAssets();
+#endif
+        return rewardDefinitions;
+    }
+
+#if UNITY_EDITOR
+    private static RewardDefinition[] LoadRewardDefinitionsFromAssets()
+    {
+        string[] paths =
+        {
+            "Assets/Data/Rewards/Sharper Sword.asset",
+            "Assets/Data/Rewards/Better Arrows.asset",
+            "Assets/Data/Rewards/Watch Posts.asset",
+            "Assets/Data/Rewards/Fast Bowstrings.asset",
+            "Assets/Data/Rewards/Royal Taxes.asset",
+            "Assets/Data/Rewards/Stone Reinforcement.asset",
+            "Assets/Data/Rewards/Repair Crew.asset",
+        };
+
+        RewardDefinition[] definitions = new RewardDefinition[paths.Length];
+        for (int i = 0; i < paths.Length; i++)
+        {
+            definitions[i] = AssetDatabase.LoadAssetAtPath<RewardDefinition>(paths[i]);
+            if (definitions[i] == null)
+            {
+                Debug.LogWarning($"Reward definition asset is missing: {paths[i]}");
+            }
+        }
+
+        return definitions;
+    }
+#endif
+
+    private static RewardManager CreateRewardManager(RunStats runStats, RunEconomy economy, Castle castle, IPlayerInputSource inputSource, RewardDefinition[] rewardDefinitions)
     {
         RewardManager rewardManager = new GameObject("Reward Manager").AddComponent<RewardManager>();
+        rewardManager.SetRewardDefinitions(rewardDefinitions);
         rewardManager.Initialize(runStats, economy, castle, inputSource);
         return rewardManager;
     }

@@ -13,16 +13,12 @@ public enum RewardType
 
 public readonly struct RewardOption
 {
-    public readonly RewardType Type;
-    public readonly string Title;
-    public readonly string Description;
+    public readonly RewardDefinition Definition;
     public readonly float Value;
 
-    public RewardOption(RewardType type, string title, string description, float value)
+    public RewardOption(RewardDefinition definition, float value)
     {
-        Type = type;
-        Title = title;
-        Description = description;
+        Definition = definition;
         Value = value;
     }
 }
@@ -32,6 +28,7 @@ public sealed class RewardManager : MonoBehaviour
     [SerializeField] private RunStats runStats;
     [SerializeField] private RunEconomy economy;
     [SerializeField] private Castle castle;
+    [SerializeField] private RewardDefinition[] rewardDefinitions;
 
     private readonly RewardOption[] activeOptions = new RewardOption[3];
     private IPlayerInputSource inputSource;
@@ -46,11 +43,24 @@ public sealed class RewardManager : MonoBehaviour
         inputSource = input;
     }
 
+    public void SetRewardDefinitions(RewardDefinition[] definitions)
+    {
+        rewardDefinitions = definitions;
+    }
+
     public void BeginReward(int completedWave)
     {
-        RewardType first = GetRandomRewardType();
-        RewardType second = GetRandomRewardTypeExcept(first);
-        RewardType third = GetRandomRewardTypeExcept(first, second);
+        EnsureRewardDefinitions();
+
+        if (CountUniqueRewardTypes() < activeOptions.Length)
+        {
+            HasPendingReward = false;
+            return;
+        }
+
+        RewardDefinition first = GetRandomRewardDefinition();
+        RewardDefinition second = GetRandomRewardDefinitionExcept(first);
+        RewardDefinition third = GetRandomRewardDefinitionExcept(first, second);
 
         activeOptions[0] = CreateReward(first, completedWave);
         activeOptions[1] = CreateReward(second, completedWave);
@@ -75,28 +85,82 @@ public sealed class RewardManager : MonoBehaviour
         HasPendingReward = false;
     }
 
-    private static RewardType GetRandomRewardType()
+    private RewardDefinition GetRandomRewardDefinition()
     {
-        return (RewardType)Random.Range(0, System.Enum.GetValues(typeof(RewardType)).Length);
-    }
-
-    private static RewardType GetRandomRewardTypeExcept(params RewardType[] excluded)
-    {
-        RewardType type;
+        RewardDefinition definition;
         do
         {
-            type = GetRandomRewardType();
+            definition = rewardDefinitions[Random.Range(0, rewardDefinitions.Length)];
         }
-        while (Contains(excluded, type));
+        while (definition == null);
 
-        return type;
+        return definition;
     }
 
-    private static bool Contains(RewardType[] options, RewardType type)
+    private void EnsureRewardDefinitions()
+    {
+        if (rewardDefinitions != null && CountUniqueRewardTypes() >= activeOptions.Length)
+        {
+            return;
+        }
+
+        Debug.LogWarning("RewardManager has missing reward definitions. Falling back to runtime defaults.", this);
+        rewardDefinitions = RewardDefinition.CreateRuntimeDefaults();
+    }
+
+    private RewardDefinition GetRandomRewardDefinitionExcept(params RewardDefinition[] excluded)
+    {
+        RewardDefinition definition;
+        do
+        {
+            definition = GetRandomRewardDefinition();
+        }
+        while (Contains(excluded, definition));
+
+        return definition;
+    }
+
+    private int CountUniqueRewardTypes()
+    {
+        if (rewardDefinitions == null)
+        {
+            return 0;
+        }
+
+        int count = 0;
+
+        for (int i = 0; i < rewardDefinitions.Length; i++)
+        {
+            RewardDefinition definition = rewardDefinitions[i];
+            if (definition == null)
+            {
+                continue;
+            }
+
+            bool alreadyCounted = false;
+            for (int j = 0; j < i; j++)
+            {
+                if (rewardDefinitions[j] != null && rewardDefinitions[j].Type == definition.Type)
+                {
+                    alreadyCounted = true;
+                    break;
+                }
+            }
+
+            if (!alreadyCounted)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static bool Contains(RewardDefinition[] options, RewardDefinition definition)
     {
         for (int i = 0; i < options.Length; i++)
         {
-            if (options[i] == type)
+            if (options[i] == definition || (options[i] != null && definition != null && options[i].Type == definition.Type))
             {
                 return true;
             }
@@ -105,32 +169,19 @@ public sealed class RewardManager : MonoBehaviour
         return false;
     }
 
-    private RewardOption CreateReward(RewardType type, int wave)
+    private static RewardOption CreateReward(RewardDefinition definition, int wave)
     {
-        int scalingGold = 25 + wave * 5;
-
-        switch (type)
-        {
-            case RewardType.KingDamage:
-                return new RewardOption(RewardType.KingDamage, "Sharper Sword", "+20% king damage", 0.2f);
-            case RewardType.TowerDamage:
-                return new RewardOption(RewardType.TowerDamage, "Better Arrows", "+20% tower damage", 0.2f);
-            case RewardType.TowerRange:
-                return new RewardOption(RewardType.TowerRange, "Watch Posts", "+15% tower range", 0.15f);
-            case RewardType.TowerAttackSpeed:
-                return new RewardOption(RewardType.TowerAttackSpeed, "Fast Bowstrings", "+15% tower attack speed", 0.15f);
-            case RewardType.Gold:
-                return new RewardOption(RewardType.Gold, "Royal Taxes", $"+{scalingGold} gold", scalingGold);
-            case RewardType.CastleMaxHealth:
-                return new RewardOption(RewardType.CastleMaxHealth, "Stone Reinforcement", "+50 castle max HP", 50f);
-            default:
-                return new RewardOption(RewardType.CastleHeal, "Repair Crew", "Heal castle for 45 HP", 45f);
-        }
+        return new RewardOption(definition, definition != null ? definition.GetValue(wave) : 0f);
     }
 
     private void Apply(RewardOption option)
     {
-        switch (option.Type)
+        if (option.Definition == null)
+        {
+            return;
+        }
+
+        switch (option.Definition.Type)
         {
             case RewardType.KingDamage:
                 runStats?.AddKingDamage(option.Value);
@@ -177,7 +228,20 @@ public sealed class RewardManager : MonoBehaviour
         {
             RewardOption option = activeOptions[i];
             float rowY = y + 32f + i * 36f;
-            GUI.Label(new Rect(x + 20f, rowY, width - 40f, 24f), $"{i + 1}. {option.Title} - {option.Description}");
+            if (option.Definition != null)
+            {
+                GUI.Label(new Rect(x + 20f, rowY, width - 40f, 24f), $"{i + 1}. {option.Definition.Title} - {FormatDescription(option)}");
+            }
         }
+    }
+
+    private static string FormatDescription(RewardOption option)
+    {
+        if (option.Definition.Type == RewardType.Gold)
+        {
+            return $"+{Mathf.RoundToInt(option.Value)} gold";
+        }
+
+        return option.Definition.Description;
     }
 }

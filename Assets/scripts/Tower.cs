@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 public sealed class Tower : MonoBehaviour
 {
+    private const string ArrowPrefabResourcePath = "Prefabs/Gameplay/ArrowProjectile";
+
     private static readonly List<Tower> ActiveTowers = new List<Tower>(64);
 
     [SerializeField] private float range = 9f;
     [SerializeField] private float attacksPerSecond = 1f;
     [SerializeField] private float damage = 25f;
     [SerializeField] private Transform shootPoint;
+    [SerializeField] private ArrowProjectile arrowPrefab;
 
     private float nextShotTime;
-    private Material arrowMaterial;
     private RunStats runStats;
 
     public static IReadOnlyList<Tower> Active => ActiveTowers;
@@ -30,11 +32,6 @@ public sealed class Tower : MonoBehaviour
     public void Initialize(RunStats stats)
     {
         runStats = stats;
-    }
-
-    private void Awake()
-    {
-        arrowMaterial = CreateMaterial("Prototype Arrow", new Color(0.78f, 0.54f, 0.25f));
     }
 
     private void OnEnable()
@@ -101,33 +98,26 @@ public sealed class Tower : MonoBehaviour
 
     private void Shoot(Enemy target)
     {
-        Vector3 origin = shootPoint != null ? shootPoint.position : transform.position + Vector3.up * 1.8f;
-        GameObject arrowObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        arrowObject.name = "Arrow Projectile";
-        arrowObject.transform.position = origin;
-        arrowObject.transform.localScale = new Vector3(0.06f, 0.35f, 0.06f);
-        arrowObject.GetComponent<Renderer>().sharedMaterial = arrowMaterial;
-        RemoveCollider(arrowObject);
+        ArrowProjectile prefab = GetArrowPrefab();
+        if (prefab == null)
+        {
+            Debug.LogWarning($"Tower cannot shoot because Resources/{ArrowPrefabResourcePath} is missing.", this);
+            return;
+        }
 
-        ArrowProjectile arrow = arrowObject.AddComponent<ArrowProjectile>();
+        Vector3 origin = shootPoint != null ? shootPoint.position : transform.position + Vector3.up * 1.8f;
+        ArrowProjectile arrow = Instantiate(prefab, origin, Quaternion.identity);
         float damageMultiplier = runStats != null ? runStats.TowerDamageMultiplier : 1f;
         arrow.Launch(target, damage * damageMultiplier);
     }
 
-    private static Material CreateMaterial(string materialName, Color color)
+    private ArrowProjectile GetArrowPrefab()
     {
-        Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        material.name = materialName;
-        material.color = color;
-        return material;
-    }
-
-    private static void RemoveCollider(GameObject target)
-    {
-        Collider collider = target.GetComponent<Collider>();
-        if (collider != null)
+        if (arrowPrefab == null)
         {
-            Destroy(collider);
+            arrowPrefab = Resources.Load<ArrowProjectile>(ArrowPrefabResourcePath);
         }
+
+        return arrowPrefab;
     }
 }

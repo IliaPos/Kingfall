@@ -186,6 +186,12 @@ public sealed class WaveManager : MonoBehaviour
         {
             GUI.Label(new Rect(Screen.width * 0.5f - 80f, 90f, 220f, 40f), "GAME OVER");
         }
+
+        if (phase == GamePhase.Preparation)
+        {
+            GUI.Box(new Rect(Screen.width * 0.5f - 190f, 80f, 380f, 76f), "PREPARATION");
+            GUI.Label(new Rect(Screen.width * 0.5f - 155f, 112f, 330f, 24f), "Press Enter or R to start the next wave");
+        }
     }
 
     private static Material CreateMaterial(string materialName, Color color)

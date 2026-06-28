@@ -8,10 +8,13 @@ public enum BuildableType
 
 public sealed class BuildSystem : MonoBehaviour
 {
+    private const string TowerPrefabResourcePath = "Prefabs/Gameplay/Tower";
+
     [SerializeField] private WaveManager waveManager;
     [SerializeField] private RunEconomy economy;
     [SerializeField] private RunStats runStats;
     [SerializeField] private Transform builder;
+    [SerializeField] private GameObject towerPrefab;
     [SerializeField] private int towerCost = 40;
     [SerializeField] private int wallCost = 18;
     [SerializeField] private float placementDistance = 3f;
@@ -20,7 +23,6 @@ public sealed class BuildSystem : MonoBehaviour
 
     private IPlayerInputSource inputSource;
     private Material towerMaterial;
-    private Material roofMaterial;
     private Material validGhostMaterial;
     private Material invalidGhostMaterial;
     private GameObject ghostTower;
@@ -51,7 +53,6 @@ public sealed class BuildSystem : MonoBehaviour
         }
 
         towerMaterial = CreateMaterial("Prototype Tower", new Color(0.45f, 0.34f, 0.24f));
-        roofMaterial = CreateMaterial("Prototype Tower Roof", new Color(0.24f, 0.32f, 0.52f));
         validGhostMaterial = CreateMaterial("Valid Tower Ghost", new Color(0.25f, 0.85f, 0.35f, 0.55f));
         invalidGhostMaterial = CreateMaterial("Invalid Tower Ghost", new Color(0.9f, 0.2f, 0.18f, 0.55f));
     }
@@ -161,17 +162,27 @@ public sealed class BuildSystem : MonoBehaviour
             return;
         }
 
-        if (!economy.TrySpend(GetSelectedCost()))
-        {
-            return;
-        }
-
         if (selectedType == BuildableType.Tower)
         {
+            if (!CanCreateTower())
+            {
+                return;
+            }
+
+            if (!economy.TrySpend(towerCost))
+            {
+                return;
+            }
+
             CreateTower(position);
         }
         else
         {
+            if (!economy.TrySpend(wallCost))
+            {
+                return;
+            }
+
             CreateWall(position, builder.rotation);
         }
 
@@ -235,32 +246,44 @@ public sealed class BuildSystem : MonoBehaviour
 
     private void CreateTower(Vector3 position)
     {
-        GameObject root = new GameObject("Archer Tower");
+        GameObject prefab = GetTowerPrefab();
+        GameObject root = Instantiate(prefab, position, Quaternion.identity);
+        root.name = "Archer Tower";
         root.transform.position = position;
 
-        GameObject baseObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        baseObject.name = "Tower Base";
-        baseObject.transform.SetParent(root.transform);
-        baseObject.transform.localPosition = new Vector3(0f, 0.8f, 0f);
-        baseObject.transform.localScale = new Vector3(0.75f, 0.8f, 0.75f);
-        baseObject.GetComponent<Renderer>().sharedMaterial = towerMaterial;
-        RemoveCollider(baseObject);
+        Tower tower = root.GetComponent<Tower>();
+        if (tower != null)
+        {
+            tower.Initialize(runStats);
+        }
+    }
 
-        GameObject roof = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        roof.name = "Tower Roof";
-        roof.transform.SetParent(root.transform);
-        roof.transform.localPosition = new Vector3(0f, 1.75f, 0f);
-        roof.transform.localScale = new Vector3(0.95f, 0.2f, 0.95f);
-        roof.GetComponent<Renderer>().sharedMaterial = roofMaterial;
-        RemoveCollider(roof);
+    private bool CanCreateTower()
+    {
+        GameObject prefab = GetTowerPrefab();
+        if (prefab == null)
+        {
+            Debug.LogWarning($"Cannot create tower because Resources/{TowerPrefabResourcePath} is missing.", this);
+            return false;
+        }
 
-        GameObject shootPoint = new GameObject("Shoot Point");
-        shootPoint.transform.SetParent(root.transform);
-        shootPoint.transform.localPosition = new Vector3(0f, 1.85f, 0f);
+        if (prefab.GetComponent<Tower>() == null)
+        {
+            Debug.LogWarning("Cannot create tower because the tower prefab has no Tower component.", prefab);
+            return false;
+        }
 
-        Tower tower = root.AddComponent<Tower>();
-        tower.Initialize(runStats);
-        tower.SetShootPoint(shootPoint.transform);
+        return true;
+    }
+
+    private GameObject GetTowerPrefab()
+    {
+        if (towerPrefab == null)
+        {
+            towerPrefab = Resources.Load<GameObject>(TowerPrefabResourcePath);
+        }
+
+        return towerPrefab;
     }
 
     private void CreateWall(Vector3 position, Quaternion rotation)
